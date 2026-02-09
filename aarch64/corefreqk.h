@@ -55,6 +55,35 @@
 	{ /* EOL */ }							\
 }
 
+#if defined(CONFIG_OF)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
+#define of_root allnodes
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
+#define of_root of_allnodes
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
+#ifndef of_device_compatible_match
+#define of_device_compatible_match(device, compat)			\
+({									\
+	unsigned int tmp, score = 0;					\
+									\
+	if (!compat)							\
+		return 0;						\
+									\
+	while (*compat) {						\
+		tmp = of_device_is_compatible(device, *compat);		\
+		if (tmp > score)					\
+			score = tmp;					\
+		compat++;						\
+	}								\
+									\
+	score;								\
+})
+#endif
+#endif
+#endif /* CONFIG_OF */
+
 #if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
 #define of_cpu_device_node_get(cpu)					\
 ({									\
