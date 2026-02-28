@@ -9342,8 +9342,9 @@ void CPU_Item_Max_Freq(unsigned int cpu, ASCII *item)
 		RO(Shm)->Cpu[cpu].Topology.PackageID,
 		RO(Shm)->Cpu[cpu].Topology.CoreID,
 		RO(Shm)->Cpu[cpu].Topology.ThreadID,
-		ABS_FREQ_MHz(	double, RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q,
-					CFlop->Clock ),
+		CLOCK_MHz(double,
+			COF_FREQ_MHz(	RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
+					CFlop->Clock )),
 		(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10 ?
 			'<' : '[',
 		RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q,
@@ -9437,8 +9438,9 @@ void CPU_Item_Min_Freq(unsigned int cpu, ASCII *item)
 		RO(Shm)->Cpu[cpu].Topology.PackageID,
 		RO(Shm)->Cpu[cpu].Topology.CoreID,
 		RO(Shm)->Cpu[cpu].Topology.ThreadID,
-		ABS_FREQ_MHz(	double, RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q,
-					CFlop->Clock ),
+		CLOCK_MHz(double,
+			COF_FREQ_MHz(	RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)],
+					CFlop->Clock )),
 		(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01 ?
 			'<' : '[',
 		RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q,
