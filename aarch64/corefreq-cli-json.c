@@ -1414,7 +1414,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			{
 				json_start_object(&s);
 				json_key(&s, "SMI");
-				json_literal(&s, "%u", RO(Shm)->Cpu[cpu].FlipFlop[i2].Counter.SMI);
+				json_literal(&s, "%llu", RO(Shm)->Cpu[cpu].FlipFlop[i2].Counter.SMI);
 				json_key(&s, "NMI");
 				{
 					json_start_object(&s);

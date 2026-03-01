@@ -166,7 +166,7 @@ typedef struct
 		} Voltage;
 
 		struct {
-		unsigned int		SMI;
+		unsigned long long	SMI;
 			struct {
 			unsigned int	LOCAL,
 					UNKNOWN,

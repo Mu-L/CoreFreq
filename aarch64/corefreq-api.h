@@ -149,7 +149,6 @@ typedef struct
 		unsigned long long	ACCU;
 		} Power;
 
-		unsigned int		SMI;
 	} Delta __attribute__ ((aligned (8)));
 
 	POWER_THERMAL			PowerThermal;
@@ -157,7 +156,7 @@ typedef struct
 
 	struct
 	{
-		unsigned int		SMI;
+		unsigned long long	SMI;
 		struct {
 			unsigned int
 					LOCAL,

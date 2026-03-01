@@ -3563,32 +3563,40 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
     if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
 	__asm__ __volatile__
 	(
-		"# Assign an event number per counter"	"\n\t"
+		"# Save Event Selection Register"	"\n\t"
 		"mrs	x12	,	pmselr_el0"	"\n\t"
 		"str	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #3"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
 
-		"# Choosen [EVENT#] to collect from"	"\n\t"
+		"# Program [EVENT4] in counter #4"	"\n\t"
+		"mov	x12	,	#4"		"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
 		"mrs	x12	,	pmxevtyper_el0" "\n\t"
-		"str	x12	,	%[PMTYPE3]"	"\n\t"
-		"orr	x12	,	x12, %[EVENT3]" "\n\t"
+		"str	x12	,	%[PMTYPE4]"	"\n\t"
+		"mov	x12	,	%[EVENT4]"	"\n\t"
 		"msr	pmxevtyper_el0, x12"		"\n\t"
 
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #2"	"\n\t"
+		"# Program [EVENT3] in counter #3"	"\n\t"
+		"mov	x12	,	#3"		"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
+		"mrs	x12	,	pmxevtyper_el0" "\n\t"
+		"str	x12	,	%[PMTYPE3]"	"\n\t"
+		"mov	x12	,	%[EVENT3]"	"\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
+
+		"# Program [EVENT2] in counter #2"	"\n\t"
+		"mov	x12	,	#2"		"\n\t"
 		"msr	pmselr_el0,	x12"		"\n\t"
 		"mrs	x12	,	pmxevtyper_el0" "\n\t"
 		"str	x12	,	%[PMTYPE2]"	"\n\t"
-		"orr	x12	,	x12, %[EVENT2]" "\n\t"
+		"mov	x12	,	%[EVENT2]"	"\n\t"
 		"msr	pmxevtyper_el0, x12"		"\n\t"
 
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #0b11111"	"\n\t"
+		"# Program first counter"		"\n\t"
+		"mov	x12	,	#0b11111"	"\n\t"
 		"msr	pmselr_el0,	x12"		"\n\t"
 		"mrs	x12	,	pmxevtyper_el0" "\n\t"
 		"str	x12	,	%[PMTYPE1]"	"\n\t"
-		"orr	x12	,	x12, %[FILTR1]" "\n\t"
+		"mov	x12	,	%[FILTR1]"	"\n\t"
 		"msr	pmxevtyper_el0, x12"		"\n\t"
 
 		"# No filtered EL within Cycle counter" "\n\t"
@@ -3606,7 +3614,7 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"mrs	x12	,	pmuserenr_el0"	"\n\t"
 		"str	x12	,	%[PMUSER]"	"\n\t"
 		"orr	x12	,	x12, %[ENUSR]"	"\n\t"
-		"msr	pmuserenr_el0,	%12"		"\n\t"
+		"msr	pmuserenr_el0,	x12"		"\n\t"
 
 		"# Enable all PMU counters"		"\n\t"
 		"mrs	x12	,	pmcr_el0"	"\n\t"
@@ -3616,16 +3624,18 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"isb"
 		: [PMCR]	"+m" (Save->PMCR.value),
 		  [PMSELR]	"+m" (Save->PMSELR.value),
+		  [PMTYPE4]	"+m" (Save->PMTYPE[3].value),
 		  [PMTYPE3]	"+m" (Save->PMTYPE[2].value),
 		  [PMTYPE2]	"+m" (Save->PMTYPE[1].value),
 		  [PMTYPE1]	"+m" (Save->PMTYPE[0].value),
 		  [PMCCFILTR]	"+m" (Save->PMCCFILTR.value),
 		  [PMCNTEN]	"+m" (Save->PMCNTEN.value),
 		  [PMUSER]	"+m" (Save->PMUSER.value)
-		: [EVENT3]	"r" (0x0008LLU),
-		  [EVENT2]	"r" (0x0011LLU),
+		: [EVENT4]	"r" (0x0082LLU),	/* EXC_SVC	*/
+		  [EVENT3]	"r" (0x0008LLU),	/* INST_RETIRED */
+		  [EVENT2]	"r" (0x0011LLU),	/* CPU_CYCLES	*/
 		  [FILTR1]	"r" (0x0LLU),
-		  [ENSET]	"r" (0x8000000cLLU),
+		  [ENSET]	"r" (0x8000001cLLU),
 		  [ENUSR]	"r" (0x5LLU),
 		  [CTRL]	"i" (0x87LLU)
 		: "memory", "%x12"
@@ -3666,12 +3676,19 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		"msr	pmxevtyper_el0, x12"		"\n\t"
 
 		"ldr	x12	,	%[PMSELR]"	"\n\t"
+		"orr	x12	,	x12, #4"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
+		"ldr	x12	,	%[PMTYPE4]"	"\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
+
+		"ldr	x12	,	%[PMSELR]"	"\n\t"
 		"msr	pmselr_el0,	x12"		"\n\t"
 
 		"isb"
 		:
 		: [PMCR]	"r" (Save->PMCR.value),
 		  [PMSELR]	"m" (Save->PMSELR.value),
+		  [PMTYPE4]	"m" (Save->PMTYPE[3].value),
 		  [PMTYPE3]	"m" (Save->PMTYPE[2].value),
 		  [PMTYPE2]	"m" (Save->PMTYPE[1].value),
 		  [PMTYPE1]	"m" (Save->PMTYPE[0].value),
@@ -3690,6 +3707,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 			pmevcntr2_el0,	Core->Counter[T].C0.UCC,	\
 			pmccntr_el0,	Core->Counter[T].C0.URC,	\
 			pmevcntr3_el0,	Core->Counter[T].INST );	\
+		RDPMC(	pmevcntr4_el0, x12, Core->Interrupt.SMI );	\
 									\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\

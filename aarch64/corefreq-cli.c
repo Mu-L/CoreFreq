@@ -14963,7 +14963,7 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 		&RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	size_t len;
 
-	StrLenFormat(len, Buffer, 10+1, "%10u", CFlop->Counter.SMI);
+	StrLenFormat(len, Buffer, 10+1, "%10llu", CFlop->Counter.SMI);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
     if (BITVAL(RO(Shm)->Registration.NMI, BIT_NMI_LOCAL) == 1) {
